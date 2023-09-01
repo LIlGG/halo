@@ -1,17 +1,18 @@
 import { usePluginModuleStore } from "@/stores/plugin";
-import type {
-  EntityDropdownItem,
-  PluginModule,
-} from "@halo-dev/console-shared";
-import { onMounted, ref } from "vue";
+import type { EntityFieldItem, PluginModule } from "@halo-dev/console-shared";
+import { onMounted, ref, type ComputedRef, type Ref, computed } from "vue";
 
-export function useEntityDropdownItemExtensionPoint<T>(
+export function useEntityFieldItemExtensionPoint<T>(
   extensionPointName: string,
-  presets: EntityDropdownItem<T>[]
+  entity: Ref<T>,
+  presets: ComputedRef<EntityFieldItem[]>
 ) {
   const { pluginModules } = usePluginModuleStore();
+  const itemsFromPlugins = ref<EntityFieldItem[]>([]);
 
-  const dropdownItems = ref<EntityDropdownItem<T>[]>(presets);
+  const allItems = computed(() => {
+    return [...presets.value, ...itemsFromPlugins.value];
+  });
 
   onMounted(() => {
     pluginModules.forEach((pluginModule: PluginModule) => {
@@ -19,18 +20,28 @@ export function useEntityDropdownItemExtensionPoint<T>(
       if (!extensionPoints?.[extensionPointName]) {
         return;
       }
-
-      const items = extensionPoints[
-        extensionPointName
-      ]() as EntityDropdownItem<T>[];
-
-      dropdownItems.value.push(...items);
-    });
-
-    dropdownItems.value.sort((a, b) => {
-      return a.priority - b.priority;
+      const items = extensionPoints[extensionPointName](
+        entity
+      ) as EntityFieldItem[];
+      itemsFromPlugins.value.push(...items);
     });
   });
 
-  return { dropdownItems };
+  const startFields = computed(() => {
+    return allItems.value
+      .filter((item) => item.position === "start")
+      .sort((a, b) => {
+        return a.priority - b.priority;
+      });
+  });
+
+  const endFields = computed(() => {
+    return allItems.value
+      .filter((item) => item.position === "end")
+      .sort((a, b) => {
+        return a.priority - b.priority;
+      });
+  });
+
+  return { startFields, endFields };
 }
