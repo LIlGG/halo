@@ -18,14 +18,20 @@ import { useI18n } from "vue-i18n";
 import { useOperationItemExtensionPoint } from "@/composables/use-operation-extension-points";
 import EntityDropdownItems from "@/components/entity/EntityDropdownItems.vue";
 import { toRefs } from "vue";
-import type { OperationItem } from "packages/shared/dist";
+import type { OperationItem } from "@halo-dev/console-shared";
 
 const queryClient = useQueryClient();
 const { t } = useI18n();
 
-const props = defineProps<{
-  backup: Backup;
-}>();
+const props = withDefaults(
+  defineProps<{
+    backup: Backup;
+    showOperations: boolean;
+  }>(),
+  {
+    showOperations: true,
+  }
+);
 
 const { backup } = toRefs(props);
 
@@ -185,8 +191,9 @@ const { operationItems } = useOperationItemExtensionPoint<Backup>(
           </span>
         </template>
       </VEntityField>
+      <slot name="end"></slot>
     </template>
-    <template #dropdownItems>
+    <template v-if="showOperations" #dropdownItems>
       <EntityDropdownItems :dropdown-items="operationItems" :item="backup" />
     </template>
   </VEntity>
