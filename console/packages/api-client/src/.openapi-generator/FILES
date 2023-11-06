@@ -179,6 +179,7 @@ models/notification.ts
 models/notifier-descriptor-list.ts
 models/notifier-descriptor-spec.ts
 models/notifier-descriptor.ts
+models/notifier-info.ts
 models/notifier-setting-ref.ts
 models/owner-info.ts
 models/pat-spec.ts
@@ -186,6 +187,7 @@ models/personal-access-token-list.ts
 models/personal-access-token.ts
 models/plugin-author.ts
 models/plugin-list.ts
+models/plugin-running-state-request.ts
 models/plugin-spec.ts
 models/plugin-status.ts
 models/plugin.ts
@@ -211,7 +213,11 @@ models/reason-selector.ts
 models/reason-spec-attributes.ts
 models/reason-spec.ts
 models/reason-subject.ts
+models/reason-type-info.ts
 models/reason-type-list.ts
+models/reason-type-notifier-collection-request.ts
+models/reason-type-notifier-matrix.ts
+models/reason-type-notifier-request.ts
 models/reason-type-spec.ts
 models/reason-type.ts
 models/reason.ts
