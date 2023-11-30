@@ -16,7 +16,7 @@ import { computed, markRaw, ref, watch, type Component } from "vue";
 import Fuse from "fuse.js";
 import { apiClient } from "@/utils/api-client";
 import { usePermission } from "@/utils/permission";
-import { useThemeStore } from "@/stores/theme";
+import { useThemeStore } from "@console/stores/theme";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 
@@ -382,7 +382,7 @@ const onVisibleChange = (visible: boolean) => {
         ref="globalSearchInput"
         v-model="keyword"
         :placeholder="$t('core.components.global_search.placeholder')"
-        class="w-full py-1 text-base outline-none"
+        class="w-full px-0 py-1 text-base outline-none"
         autocomplete="off"
         autocorrect="off"
         spellcheck="false"

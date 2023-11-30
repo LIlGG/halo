@@ -28,6 +28,8 @@ core:
         placeholder: Username
       display_name:
         placeholder: Display name
+      email:
+        placeholder: Email
       password:
         placeholder: Password
       password_confirm:
@@ -79,8 +81,6 @@ core:
         button: Profile
       visit_homepage:
         title: Visit homepage
-      notifications:
-        button: Notifications
   dashboard:
     title: Dashboard
     actions:
@@ -108,8 +108,8 @@ core:
         quicklink:
           title: Quick Link
           actions:
-            user_profile:
-              title: User Profile
+            user_center:
+              title: User Center
             view_site:
               title: View Site
             new_post:
@@ -1019,13 +1019,15 @@ core:
     fields:
       external_url: External url
       start_time: Start time
-      timezone: Timezone
-      locale: Locale
+      timezone: System Timezone
+      locale: System Locale
       version: Version
       build_time: Build time
       database: Database
       os: Operating system
       log: System log
+      activated_theme: Activated theme
+      enabled_plugins: Enabled plugins
     fields_values:
       external_url:
         not_setup: Not setup
@@ -1095,7 +1097,7 @@ core:
     forbidden:
       message: Unauthorized access to this page
     actions:
-      dashboard: Dashboard
+      home: Back to home
   setup:
     title: Setup
     operations:
@@ -1174,6 +1176,8 @@ core:
     Migration Manage: Backup and Restore Manage
     role-template-view-users: User View
     role-template-change-password: Change Password
+    Actuator Management: System Information
+    Actuator Manage: Access System Information
   components:
     submit_button:
       computed_text: "{text} ({shortcut})"
@@ -1201,10 +1205,7 @@ core:
             placeholder: "Enter / to select input type."
       toolbox:
         attachment: Attachment
-      upload_attachment:
-        toast:
-          no_available_policy: There is currently no available storage policy
-          failed_fetch_permalink: "Failed to get the permalink of the attachment: {display_name}"
+        show_hide_sidebar: Show/Hide Sidebar
     global_search:
       placeholder: Enter keywords to search
       no_results: No search results

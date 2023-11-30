@@ -11,12 +11,16 @@ export enum rbacAnnotations {
   DEPENDENCIES = "rbac.authorization.halo.run/dependencies",
   AVATAR_ATTACHMENT_NAME = "halo.run/avatar-attachment-name",
   LAST_AVATAR_ATTACHMENT_NAME = "halo.run/last-avatar-attachment-name",
+  REDIRECT_ON_LOGIN = "rbac.authorization.halo.run/redirect-on-login",
 }
 
 // content
 
 export enum contentAnnotations {
   PREFERRED_EDITOR = "content.halo.run/preferred-editor",
+  PATCHED_CONTENT = "content.halo.run/patched-content",
+  PATCHED_RAW = "content.halo.run/patched-raw",
+  CONTENT_JSON = "content.halo.run/content-json",
 }
 
 // pat

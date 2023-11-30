@@ -28,6 +28,8 @@ core:
         placeholder: 用戶名
       display_name:
         placeholder: 名稱
+      email:
+        placeholder: 電子郵箱
       password:
         placeholder: 密碼
       password_confirm:
@@ -79,8 +81,6 @@ core:
         button: 個人資料
       visit_homepage:
         title: 訪問首頁
-      notifications:
-        button: 我的訊息
   dashboard:
     title: 儀表板
     actions:
@@ -108,8 +108,8 @@ core:
         quicklink:
           title: 快捷訪問
           actions:
-            user_profile:
-              title: 個人資料
+            user_center:
+              title: 個人中心
             view_site:
               title: 查看站點
             new_post:
@@ -1019,13 +1019,15 @@ core:
     fields:
       external_url: 外部訪問地址
       start_time: 啟動時間
-      timezone: 時區
-      locale: 語言
+      timezone: 系統時區
+      locale: 系統語言
       version: 版本
       build_time: 構建時間
       database: 資料庫
       os: 操作系統
       log: 運行日誌
+      activated_theme: 已啟動主題
+      enabled_plugins: 已啟動插件
     fields_values:
       external_url:
         not_setup: 未設置
@@ -1095,7 +1097,7 @@ core:
     forbidden:
       message: 沒有權限訪問此頁面
     actions:
-      dashboard: 儀表盤
+      home: 返回首頁
   setup:
     title: 系統初始化
     operations:
@@ -1174,6 +1176,8 @@ core:
     Migration Manage: 備份與還原管理
     role-template-view-users: 用戶查看
     role-template-change-password: 修改密碼
+    Actuator Management: 系統指標
+    Actuator Manage: 訪問系統指標
   components:
     submit_button:
       computed_text: "{text}（{shortcut}）"
@@ -1201,10 +1205,7 @@ core:
             placeholder: "輸入 / 以選擇輸入類型"
       toolbox:
         attachment: 選擇附件
-      upload_attachment:
-        toast:
-          no_available_policy: 目前沒有可用的存儲策略
-          failed_fetch_permalink: 獲取附件永久連結失敗：{display_name}
+        show_hide_sidebar: 顯示 / 隱藏側邊欄
     global_search:
       placeholder: 輸入關鍵字以搜尋
       no_results: 沒有搜尋結果
@@ -1290,7 +1291,7 @@ core:
       delete_success: 刪除成功
       save_success: 保存成功
       publish_success: 發布成功
-      cancel_publish_success: 發布成功
+      cancel_publish_success: 取消發布成功
       recovery_success: 恢復成功
       uninstall_success: 卸載成功
       active_success: 啟用成功
