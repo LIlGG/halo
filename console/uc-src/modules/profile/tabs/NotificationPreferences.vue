@@ -6,7 +6,7 @@ import { VLoading, VSwitch } from "@halo-dev/components";
 import type { Ref } from "vue";
 import { computed } from "vue";
 import { inject } from "vue";
-import cloneDeep from "lodash.clonedeep";
+import { cloneDeep } from "lodash-es";
 import type { ReasonTypeNotifierRequest } from "@halo-dev/api-client";
 
 const queryClient = useQueryClient();
@@ -101,7 +101,7 @@ const {
               class="px-4 py-3 text-left text-sm font-semibold text-gray-900 sm:w-96"
               scope="col"
             >
-              {{ $t("core.user.notification-preferences.fields.type") }}
+              {{ $t("core.uc_profile.notification-preferences.fields.type") }}
             </th>
             <th
               v-for="notifier in data?.notifiers"

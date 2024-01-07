@@ -1,4 +1,4 @@
-import type { Editor, Range } from "@/tiptap/vue-3";
+import { mergeAttributes, type Editor, type Range } from "@/tiptap/vue-3";
 import TiptapParagraph from "@/extensions/paragraph";
 import TiptapHeading from "@tiptap/extension-heading";
 import type { HeadingOptions } from "@tiptap/extension-heading";
@@ -15,8 +15,20 @@ import MdiFormatHeader6 from "~icons/mdi/format-header-6";
 import { markRaw } from "vue";
 import { i18n } from "@/locales";
 import type { ExtensionOptions } from "@/types";
+import { AttrStep, Plugin, PluginKey } from "@/tiptap";
+import { generateAnchorId } from "@/utils";
 
 const Blockquote = TiptapHeading.extend<ExtensionOptions & HeadingOptions>({
+  renderHTML({ node, HTMLAttributes }) {
+    const hasLevel = this.options.levels.includes(node.attrs.level);
+    const level = hasLevel ? node.attrs.level : this.options.levels[0];
+    return [
+      `h${level}`,
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      0,
+    ];
+  },
+
   addOptions() {
     return {
       ...this.parent?.(),
@@ -264,6 +276,44 @@ const Blockquote = TiptapHeading.extend<ExtensionOptions & HeadingOptions>({
   },
   addExtensions() {
     return [TiptapParagraph];
+  },
+  addProseMirrorPlugins() {
+    let beforeComposition: boolean | undefined = undefined;
+    return [
+      new Plugin({
+        key: new PluginKey("generate-heading-id"),
+        appendTransaction: (transactions, oldState, newState) => {
+          const isChangeHeading = transactions.some((transaction) => {
+            const composition = this.editor.view.composing;
+            if (beforeComposition !== undefined && !composition) {
+              beforeComposition = undefined;
+              return true;
+            }
+            if (transaction.docChanged) {
+              beforeComposition = composition;
+              const selection = transaction.selection;
+              const { $from } = selection;
+              const node = $from.parent;
+              return node.type.name === Blockquote.name && !composition;
+            }
+            return false;
+          });
+          if (isChangeHeading) {
+            const tr = newState.tr;
+            const headingIds: string[] = [];
+            newState.doc.descendants((node, pos) => {
+              if (node.type.name === Blockquote.name) {
+                const id = generateAnchorId(node.textContent, headingIds);
+                tr.step(new AttrStep(pos, "id", id));
+                headingIds.push(id);
+              }
+            });
+            return tr;
+          }
+          return undefined;
+        },
+      }),
+    ];
   },
 });
 

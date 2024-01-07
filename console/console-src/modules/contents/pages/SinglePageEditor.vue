@@ -24,7 +24,7 @@ import {
 } from "vue";
 import { apiClient } from "@/utils/api-client";
 import { useRouteQuery } from "@vueuse/router";
-import cloneDeep from "lodash.clonedeep";
+import { cloneDeep } from "lodash-es";
 import { useRouter } from "vue-router";
 import { randomUUID } from "@/utils/id";
 import { useContentCache } from "@console/composables/use-content-cache";
@@ -40,10 +40,12 @@ import { useAutoSaveContent } from "@console/composables/use-auto-save-content";
 import { useContentSnapshot } from "@console/composables/use-content-snapshot";
 import { useSaveKeybinding } from "@console/composables/use-save-keybinding";
 import { useSessionKeepAlive } from "@/composables/use-session-keep-alive";
+import { usePermission } from "@/utils/permission";
 
 const router = useRouter();
 const { t } = useI18n();
 const { mutateAsync: singlePageUpdateMutate } = usePageUpdateMutate();
+const { currentUserHasPermission } = usePermission();
 
 // Editor providers
 const { editorProviders } = useEditorExtensionPoints();
@@ -379,6 +381,9 @@ useSessionKeepAlive();
 
 // Upload image
 async function handleUploadImage(file: File) {
+  if (!currentUserHasPermission(["uc:attachments:manage"])) {
+    return;
+  }
   if (!isUpdateMode.value) {
     await handleSave();
   }

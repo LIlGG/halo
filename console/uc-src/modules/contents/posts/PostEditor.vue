@@ -33,9 +33,11 @@ import HasPermission from "@/components/permission/HasPermission.vue";
 import { provide } from "vue";
 import type { ComputedRef } from "vue";
 import { useSessionKeepAlive } from "@/composables/use-session-keep-alive";
+import { usePermission } from "@/utils/permission";
 
 const router = useRouter();
 const { t } = useI18n();
+const { currentUserHasPermission } = usePermission();
 
 const formState = ref<Post>({
   apiVersion: "content.halo.run/v1alpha1",
@@ -227,11 +229,11 @@ function handleSaveClick() {
   }
 }
 
-function onCreatePostSuccess(data: Post) {
+async function onCreatePostSuccess(data: Post) {
   formState.value = data;
   // Update route query params
   name.value = data.metadata.name;
-  handleFetchContent();
+  await handleFetchContent();
 }
 
 // Save post
@@ -333,15 +335,28 @@ function onUpdatePostSuccess(data: Post) {
 
 // Upload image
 async function handleUploadImage(file: File) {
+  if (!currentUserHasPermission(["uc:attachments:manage"])) {
+    return;
+  }
   if (!isUpdateMode.value) {
     formState.value.metadata.annotations = {
       ...formState.value.metadata.annotations,
       [contentAnnotations.CONTENT_JSON]: JSON.stringify(content.value),
     };
 
-    await apiClient.uc.post.createMyPost({
+    if (!formState.value.spec.title) {
+      formState.value.spec.title = t("core.post_editor.untitled");
+    }
+
+    if (!formState.value.spec.slug) {
+      formState.value.spec.slug = new Date().getTime().toString();
+    }
+
+    const { data } = await apiClient.uc.post.createMyPost({
       post: formState.value,
     });
+
+    await onCreatePostSuccess(data);
   }
 
   const { data } = await apiClient.uc.attachment.createAttachmentForPost({
@@ -419,7 +434,7 @@ useSessionKeepAlive();
 
   <PostCreationModal
     v-if="postCreationModal"
-    title="创建文章"
+    :title="$t('core.uc_post.creation_modal.title')"
     :content="content"
     @close="postCreationModal = false"
     @success="onCreatePostSuccess"
@@ -427,7 +442,7 @@ useSessionKeepAlive();
 
   <PostCreationModal
     v-if="postPublishModal"
-    title="发布文章"
+    :title="$t('core.uc_post.publish_modal.title')"
     :content="content"
     publish
     @close="postPublishModal = false"
