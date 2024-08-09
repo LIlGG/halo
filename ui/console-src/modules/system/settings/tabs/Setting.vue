@@ -79,6 +79,21 @@ const handleSaveConfigMap = async () => {
         type="form"
         @submit="handleSaveConfigMap"
       >
+        <FormKit
+          type="select"
+          label="What country makes the best food?"
+          name="country"
+          placeholder="Select a country"
+          max-count="3"
+          :options="[
+            { label: 'France', value: 'fr', attrs: { disabled: true } },
+            { label: 'Germany', value: 'de', attrs: { disabled: true } },
+            { label: 'Spain', value: 'es', attrs: { disabled: true } },
+            { label: 'Italy', value: 'ie' },
+            { label: 'Greece', value: 'gr', attrs: { disabled: true } },
+          ]"
+          help="Don’t worry, you can’t get this one wrong."
+        />
         <FormKitSchema
           :schema="toRaw(formSchema)"
           :data="configMapFormData[group]"
