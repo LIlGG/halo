@@ -73,6 +73,8 @@ onMounted(() => {
   initSelectProps();
 });
 
+// TODO 需要使用容器宽度来设置 popper 的宽度
+const selectContainerHTMLRef = ref<HTMLElement | null>(null);
 // input 输入的值作为 keyword 过滤选项
 const keyword = ref<string>("");
 // 显示 dropdown
@@ -84,11 +86,12 @@ const showDropdown = ref<boolean>(false);
     :triggers="[]"
     :shown="showDropdown"
     :auto-hide="false"
-    :distance="0"
+    :distance="10"
     :container="'body'"
     class="flex-1"
+    :popper-class="`w-[32rem] `"
   >
-    <div class="flex items-center">
+    <div ref="selectContainerHTMLRef" class="flex items-center">
       <div
         class="relative mx-3 h-full flex-1 cursor-pointer items-center rounded-md text-sm"
       >
@@ -110,12 +113,11 @@ const showDropdown = ref<boolean>(false);
       </span>
     </div>
     <template #popper>
-      <div class="bg-white">
-        <SelectDropdownContainer
-          :options="selectProps.options"
-          :keyword="keyword"
-        />
-      </div>
+      <SelectDropdownContainer
+        :options="selectProps.options"
+        :keyword="keyword"
+        :multiple="selectProps.multiple"
+      />
     </template>
   </VDropdown>
 </template>
