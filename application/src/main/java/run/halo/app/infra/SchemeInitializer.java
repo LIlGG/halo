@@ -3,6 +3,7 @@ package run.halo.app.infra;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.BooleanUtils.toStringTrueFalse;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static run.halo.app.core.extension.Role.ROLE_AGGREGATE_LABEL_PREFIX;
 import static run.halo.app.extension.index.IndexAttributeFactory.multiValueAttribute;
 import static run.halo.app.extension.index.IndexAttributeFactory.simpleAttribute;
 
@@ -36,8 +37,10 @@ import run.halo.app.core.extension.UserConnection;
 import run.halo.app.core.extension.UserConnection.UserConnectionSpec;
 import run.halo.app.core.extension.attachment.Attachment;
 import run.halo.app.core.extension.attachment.Group;
+import run.halo.app.core.extension.attachment.LocalThumbnail;
 import run.halo.app.core.extension.attachment.Policy;
 import run.halo.app.core.extension.attachment.PolicyTemplate;
+import run.halo.app.core.extension.attachment.Thumbnail;
 import run.halo.app.core.extension.content.Category;
 import run.halo.app.core.extension.content.Comment;
 import run.halo.app.core.extension.content.Post;
@@ -73,7 +76,23 @@ public class SchemeInitializer implements ApplicationListener<ApplicationContext
     public void onApplicationEvent(@NonNull ApplicationContextInitializedEvent event) {
         var schemeManager = createSchemeManager(event);
 
-        schemeManager.register(Role.class);
+        schemeManager.register(Role.class, is -> {
+            is.add(new IndexSpec()
+                .setName("labels.aggregateToRoles")
+                .setIndexFunc(multiValueAttribute(Role.class,
+                    role -> Optional.ofNullable(role.getMetadata().getLabels())
+                        .map(labels -> labels.keySet()
+                            .stream()
+                            .filter(key -> key.startsWith(ROLE_AGGREGATE_LABEL_PREFIX))
+                            .filter(key -> Boolean.parseBoolean(labels.get(key)))
+                            .map(
+                                key -> StringUtils.removeStart(key, ROLE_AGGREGATE_LABEL_PREFIX)
+                            )
+                            .collect(Collectors.toSet())
+                        )
+                        .orElseGet(Set::of)))
+            );
+        });
 
         // plugin.halo.run
         schemeManager.register(Plugin.class);
@@ -466,8 +485,34 @@ public class SchemeInitializer implements ApplicationListener<ApplicationContext
                         return size != null ? size.toString() : null;
                     }))
             );
+            indexSpecs.add(new IndexSpec()
+                .setName("status.permalink")
+                .setIndexFunc(simpleAttribute(Attachment.class, attachment -> {
+                    var status = attachment.getStatus();
+                    return status == null ? null : status.getPermalink();
+                }))
+            );
         });
         schemeManager.register(PolicyTemplate.class);
+        schemeManager.register(Thumbnail.class, indexSpec -> {
+            indexSpec.add(new IndexSpec()
+                .setName(Thumbnail.ID_INDEX)
+                .setIndexFunc(simpleAttribute(Thumbnail.class, Thumbnail::idIndexFunc))
+            );
+        });
+        schemeManager.register(LocalThumbnail.class, indexSpec -> {
+            indexSpec.add(new IndexSpec()
+                .setName("spec.imageSignature")
+                .setIndexFunc(simpleAttribute(LocalThumbnail.class,
+                    thumbnail -> thumbnail.getSpec().getImageSignature())
+                ));
+            indexSpec.add(new IndexSpec()
+                .setName("spec.thumbSignature")
+                .setUnique(true)
+                .setIndexFunc(simpleAttribute(LocalThumbnail.class,
+                    thumbnail -> thumbnail.getSpec().getThumbSignature())
+                ));
+        });
         // metrics.halo.run
         schemeManager.register(Counter.class);
         // auth.halo.run

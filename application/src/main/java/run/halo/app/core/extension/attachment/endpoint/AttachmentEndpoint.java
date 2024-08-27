@@ -22,9 +22,12 @@ import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldS
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springdoc.core.fn.builders.operation.Builder;
@@ -61,17 +64,12 @@ import run.halo.app.extension.router.selector.LabelSelector;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AttachmentEndpoint implements CustomEndpoint {
 
     private final AttachmentService attachmentService;
 
     private final ReactiveExtensionClient client;
-
-    public AttachmentEndpoint(AttachmentService attachmentService,
-        ReactiveExtensionClient client) {
-        this.attachmentService = attachmentService;
-        this.client = client;
-    }
 
     @Override
     public RouterFunction<ServerResponse> endpoint() {
@@ -102,6 +100,29 @@ public class AttachmentEndpoint implements CustomEndpoint {
                         ))
                     .response(responseBuilder().implementation(Attachment.class))
                     .build())
+            .POST("/attachments/-/upload-from-url", contentType(MediaType.APPLICATION_JSON),
+                request -> request.bodyToMono(UploadFromUrlRequest.class)
+                    .flatMap(uploadFromUrlRequest -> {
+                        var url = uploadFromUrlRequest.url();
+                        var policyName = uploadFromUrlRequest.policyName();
+                        var groupName = uploadFromUrlRequest.groupName();
+                        var fileName = uploadFromUrlRequest.filename();
+                        return attachmentService.uploadFromUrl(url, policyName,
+                            groupName, fileName);
+                    })
+                    .flatMap(attachment -> ServerResponse.ok().bodyValue(attachment)),
+                builder -> builder
+                    .operationId("ExternalTransferAttachment")
+                    .tag(tag)
+                    .requestBody(requestBodyBuilder()
+                        .required(true)
+                        .content(contentBuilder()
+                            .mediaType(MediaType.APPLICATION_JSON_VALUE)
+                            .schema(schemaBuilder().implementation(UploadFromUrlRequest.class))
+                        ))
+                    .response(responseBuilder().implementation(Attachment.class))
+                    .build()
+            )
             .GET("/attachments", this::search,
                 builder -> {
                     builder
@@ -164,7 +185,7 @@ public class AttachmentEndpoint implements CustomEndpoint {
                 example = "creationTimestamp,desc"))
         Sort getSort();
 
-        public static void buildParameters(Builder builder) {
+        static void buildParameters(Builder builder) {
             IListRequest.buildParameters(builder);
             builder.parameter(QueryParamBuildUtil.sortParameter())
                 .parameter(parameterBuilder()
@@ -272,6 +293,21 @@ public class AttachmentEndpoint implements CustomEndpoint {
             return !CollectionUtils.isEmpty(getAccepts())
                 && !getAccepts().contains("*")
                 && !getAccepts().contains("*/*");
+        }
+    }
+
+    public record UploadFromUrlRequest(@Schema(requiredMode = REQUIRED) URL url,
+                                       @Schema(requiredMode = REQUIRED) String policyName,
+                                       String groupName,
+                                       String filename) {
+        public UploadFromUrlRequest {
+            if (Objects.isNull(url)) {
+                throw new ServerWebInputException("Required url is missing.");
+            }
+
+            if (!StringUtils.hasText(policyName)) {
+                throw new ServerWebInputException("Policy name must not be blank");
+            }
         }
     }
 
