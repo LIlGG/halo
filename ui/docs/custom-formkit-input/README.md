@@ -65,7 +65,7 @@
     4. `remote`：标识当前是否由用户自定义的远程数据源。
     5. `remoteOption`：当 `remote` 为 `true` 时，此配置项必须存在，用于为 Select 组件提供处理搜索及查询键值对的方法。
     6. `remoteOptimize`：是否开启远程数据源优化，默认为 `true`。开启后，将会对远程数据源进行优化，减少请求次数。仅在动态数据源下有效。
-    7. `allowCreate`：是否允许创建新选项，默认为 `false`。仅在静态数据源下有效。
+    7. `allowCreate`：是否允许创建新选项，默认为 `false`。仅在静态数据源下有效，需要同时开启 `searchable`。
     8. `clearable`：是否允许清空选项，默认为 `false`。
     9. `multiple`：是否多选，默认为 `false`。
     10. `maxCount`：多选时最大可选数量，默认为 `Infinity`。仅在多选时有效。
@@ -231,10 +231,11 @@ const handleSelectPostAuthorRemote = {
     itemsField: items
     labelField: post.spec.title
     valueField: post.metadata.name
+    fieldSelectorKey: metadata.name
 ```
 
 > [!NOTE]
-> 当远程数据具有分页时，可能会出现默认选项不在第一页的情况，此时 Select 组件将会发送另一个查询请求，以获取默认选项的数据。此接口会携带如下参数 `fieldSelector: ${requestOption.valueField}=(value1,value2,value3)`。
+> 当远程数据具有分页时，可能会出现默认选项不在第一页的情况，此时 Select 组件将会发送另一个查询请求，以获取默认选项的数据。此接口会携带如下参数 `fieldSelector: ${requestOption.fieldSelectorKey}=(value1,value2,value3)`。
 
 > 其中，value1, value2, value3 为默认选项的值。返回值与查询一致，通过 `requestOption` 解析。
 
